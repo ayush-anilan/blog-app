@@ -1,14 +1,29 @@
-
+import { Route, Routes } from 'react-router-dom'
 import './App.css'
+import axios from 'axios'
 import Index from './components/Index'
-import NavBar from './components/NavBar'
+import Layout from './Layout'
+import LoginPage from './components/LoginPage'
+import RegisterPage from './components/RegisterPage'
+import { UserContextProvider } from './userContext'
+
+
+axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL
+axios.defaults.withCredentials = true
 
 function App() {
 
   return (
     <>
-      <NavBar />
-      <Index />
+      <UserContextProvider >
+        <Routes>
+          <Route path='/' element={<Layout />}>
+            <Route index element={<Index />} />
+            <Route path='/login' element={<LoginPage />} />
+            <Route path='/register' element={<RegisterPage />} />
+          </Route>
+        </Routes>
+      </UserContextProvider>
     </>
   )
 }
