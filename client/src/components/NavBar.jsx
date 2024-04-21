@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { UserContext } from '../userContext'
+import PostAddIcon from '@mui/icons-material/PostAdd';
 
 const NavBar = () => {
     const { user, setUser } = useContext(UserContext)
@@ -21,9 +22,14 @@ const NavBar = () => {
                 <div className=''>
                     {!user && (
                         <div className='flex gap-5'>
+                            {/* <div className='p-[6px]'>
+                                <Link to={'/posts/:userID'}>
+                                    <a href="" className='font-semibold text-lg'><PostAddIcon fontSize='large' />Write</a>
+                                </Link>
+                            </div> */}
                             <div className='p-[8px]'>
-                                <Link to={'/posts'}>
-                                    <a href="" className='font-semibold text-lg'>Posts</a>
+                                <Link to={'/posts'} className='font-semibold text-lg'>
+                                    Posts
                                 </Link>
                             </div>
                             <ul className='flex gap-5'>
@@ -42,6 +48,11 @@ const NavBar = () => {
                     )}
                     {!!user && (
                         <div className='flex gap-4'>
+                            <div>
+                                <Link to={'/posts/write'}>
+                                    <PostAddIcon />Write
+                                </Link>
+                            </div>
                             <div>
                                 <Link to={'/posts'}>
                                     <a href="">Posts</a>

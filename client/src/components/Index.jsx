@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import axios from 'axios';
 import moment from "moment";
+import { Link } from 'react-router-dom';
 
 const Index = () => {
     const [posts, setPosts] = useState([])
@@ -31,9 +32,11 @@ const Index = () => {
                 <div className='relative border grid grid-cols-3'>
                     {posts.map((post) => (
                         <div className='border mx-8 my-2' key={post._id}>
-                            <h5>{post.author}</h5>
-                            <h3>{post.title}</h3>
-                            <p>{moment(post.createdAt).format("MMM DD,YYYY")}</p>
+                            <Link to={`/posts/${post._id}`}>
+                                <h5>{post.author}</h5>
+                                <h3>{post.title}</h3>
+                                <p>{moment(post.createdAt).format("MMM DD,YYYY")}</p>
+                            </Link>
                         </div>
                     ))}
 

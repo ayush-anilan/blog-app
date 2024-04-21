@@ -37,7 +37,7 @@ const Posts = () => {
                         <h4 className='text-lg'>{post.author}</h4>
                         <h5 className='text-base'>{moment(post.createdAt).format("MMM DD YYYY")}</h5>
                         <p className='text-xl'>
-                            Lorem ipsum dolor sit amet consectetur adipisicing elit. A consequatur nisi, repellat cumque unde quas magnam distinctio vel mollitia aliquam minus corrupti aspernatur rem quisquam amet? Quod deserunt assumenda at.
+                            {post.content}
                         </p>
                         <h4 className='font-semibold'>Comments</h4>
                         <p>Name</p>
