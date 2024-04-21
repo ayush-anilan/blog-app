@@ -3,6 +3,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
+const passport = require("passport");
+const JwtStrategy = require("passport-jwt").Strategy;
+const ExtractJwt = require("passport-jwt").ExtractJwt;
 const jwt = require("jsonwebtoken");
 const UserModel = require("./models/User");
 // set up mongoose connection
@@ -23,6 +26,36 @@ const cors = require("cors");
 app.use(cors({ origin: true, credentials: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+// Set up JWT authentication strategy
+const opts = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: "secretkey", // Change this to your secret key
+};
+
+passport.use(
+  new JwtStrategy(opts, function (jwt_payload, done) {
+    // Here you should fetch user details from database using `jwt_payload.sub` (user ID)
+    // Replace this with your own code to fetch user details
+    UserModel.findById(jwt_payload.sub, function (err, user) {
+      if (err) {
+        return done(err, false);
+      }
+      if (user) {
+        return done(null, user);
+      } else {
+        return done(null, false);
+      }
+    });
+  })
+);
+// Initialize Passport.js
+app.use(passport.initialize());
+
+// 4. Define the models
+const PostModel = require("./models/Post");
+const CommentModel = require("./models/Comment");
+const postRouter = require("./routes/posts");
+const commentRouter = require("./routes/comments");
 
 app.get("/", (req, res) => {
   res.json({
@@ -30,8 +63,8 @@ app.get("/", (req, res) => {
   });
 });
 
-// app.use("/api/blogs", require("./routes/blogRoutes"));
-// app.use("/api/users", require("./routes/userRoutes"));
+app.use("/posts", postRouter);
+app.use("/comment", commentRouter);
 
 // app.use(errorHandler);
 

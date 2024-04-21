@@ -7,6 +7,10 @@ const UserSchema = new Schema({
   password: { type: String },
 });
 
+UserSchema.virtual("url").get(function () {
+  return `/user/${this._id}`;
+});
+
 const UserModel = mongoose.model("User", UserSchema);
 
 module.exports = UserModel;

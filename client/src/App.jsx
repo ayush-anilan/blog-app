@@ -6,6 +6,7 @@ import Layout from './Layout'
 import LoginPage from './components/LoginPage'
 import RegisterPage from './components/RegisterPage'
 import { UserContextProvider } from './userContext'
+import Posts from './components/Posts'
 
 
 axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL
@@ -21,6 +22,7 @@ function App() {
             <Route index element={<Index />} />
             <Route path='/login' element={<LoginPage />} />
             <Route path='/register' element={<RegisterPage />} />
+            <Route path='/posts' element={<Posts />} />
           </Route>
         </Routes>
       </UserContextProvider>
