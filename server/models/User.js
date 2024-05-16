@@ -5,6 +5,7 @@ const UserSchema = new Schema({
   name: { type: String },
   email: { type: String, unique: true },
   password: { type: String },
+  profilePicture: { type: String },
 });
 
 UserSchema.virtual("url").get(function () {

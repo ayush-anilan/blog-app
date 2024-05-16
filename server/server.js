@@ -8,6 +8,8 @@ const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const jwt = require("jsonwebtoken");
 const UserModel = require("./models/User");
+const path = require("path");
+
 // set up mongoose connection
 const mongoose = require("mongoose");
 
@@ -26,6 +28,8 @@ const cors = require("cors");
 app.use(cors({ origin: true, credentials: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 // Set up JWT authentication strategy
 const opts = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -67,33 +71,12 @@ app.get("/", (req, res) => {
   });
 });
 
-app.use("/", indexRouter);
-app.use("/users", userRouter);
-app.use("/posts", postRouter);
-app.use("/comment", commentRouter);
+app.use("/api", indexRouter);
+app.use("/api/users", userRouter);
+app.use("/api/posts", postRouter);
+app.use("/api/comments", commentRouter);
 
 // app.use(errorHandler);
-
-// Format of token
-// Authorization: Bearer <access_token>
-function verifyToken(req, res, next) {
-  // Get auth header value
-  const bearerHeader = req.headers["authorization"];
-  // Check if bearer is undefined
-  if (typeof bearerHeader !== "undefined") {
-    // split at the space
-    const bearer = bearerHeader.split(" ");
-    // Get token from array
-    const bearerToken = bearer[1];
-    // Set the token
-    req.token = bearerToken;
-    // Next middleware
-    next();
-  } else {
-    // forbidden
-    res.sendStatus(403);
-  }
-}
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost: ${port}`);

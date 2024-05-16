@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const path = require("path");
 
 // Get users
 exports.getUsers = async (req, res) => {
@@ -17,9 +18,33 @@ exports.getUserById = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json(user);
+    // Constructing the response object with profile picture URL
+    const userProfile = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      profilePicture: user.profilePicture
+        ? `/api/profile-picture/${user._id}`
+        : null,
+    };
+    res.json(userProfile);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// Get profile picture
+exports.getProfilePicture = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user || !user.profilePicture) {
+      return res.status(404).json({ message: "Profile picture not found" });
+    }
+    // Send the profile picture
+    res.sendFile(path.join(__dirname, "..", user.profilePicture));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 

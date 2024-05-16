@@ -1,6 +1,25 @@
 const Post = require("../models/Post");
 const User = require("../models/User");
 const mongoose = require("mongoose");
+const multer = require("multer");
+const path = require("path");
+
+// Multer setup
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./uploads/thumbnails/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix =
+      Date.now() +
+      "-" +
+      Math.round(Math.random() * 1e9) +
+      path.extname(file.originalname);
+    cb(null, file.fieldname + "-" + uniqueSuffix);
+  },
+});
+
+const upload = multer({ storage: storage }).single("thumbnail");
 
 // GET all posts
 exports.getAllPosts = async (req, res) => {
@@ -27,22 +46,31 @@ exports.getPostById = async (req, res) => {
 
 // POST create new post
 exports.createPost = async (req, res) => {
-  try {
-    // Find the user who is creating the post
-    const user = await User.findById(req.params.userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+  upload(req, res, async (err) => {
+    if (err) {
+      return res.status(422).json({ message: "Error uploading file." });
     }
-    const post = new Post({
-      title: req.body.title,
-      content: req.body.content,
-      author: req.params.userId, // Assign the user's ObjectId as the post's author
-    });
-    const newPost = await post.save();
-    res.status(201).json(newPost);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
+
+    try {
+      // Find the user who is creating the post
+      const user = await User.findById(req.params.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const post = new Post({
+        title: req.body.title,
+        content: req.body.content,
+        author: req.params.userId, // Assign the user's ObjectId as the post's author
+        thumbnail: req.file ? req.file.path : null, // Save thumbnail path
+      });
+
+      const newPost = await post.save();
+      res.status(201).json(newPost);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  });
 };
 
 // PUT update post

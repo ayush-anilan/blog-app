@@ -1,6 +1,25 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const multer = require("multer");
+const path = require("path");
+
+// Multer setup
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./uploads/profilepics/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix =
+      Date.now() +
+      "-" +
+      Math.round(Math.random() * 1e9) +
+      path.extname(file.originalname);
+    cb(null, file.fieldname + "-" + uniqueSuffix);
+  },
+});
+
+const upload = multer({ storage: storage }).single("profilePicture");
 
 // login
 exports.login = async (req, res) => {
@@ -29,18 +48,27 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.register = async (req, res) => {
-  const { name, email, password } = req.body;
-  try {
-    const userDoc = await User.create({
-      name: name,
-      email: email,
-      password: bcrypt.hashSync(password, 10),
-    });
-    res.json(userDoc);
-  } catch (err) {
-    res.status(422).json(err);
-  }
+exports.register = (req, res) => {
+  upload(req, res, async (err) => {
+    if (err) {
+      return res.status(422).json({ message: "Error uploading file." });
+    }
+
+    const { name, email, password } = req.body;
+    const profilePicture = req.file ? req.file.path : null;
+
+    try {
+      const userDoc = await User.create({
+        name: name,
+        email: email,
+        password: bcrypt.hashSync(password, 10),
+        profilePicture: profilePicture, // Save profile picture path
+      });
+      res.json(userDoc);
+    } catch (err) {
+      res.status(422).json(err);
+    }
+  });
 };
 
 exports.logout = async (req, res) => {
