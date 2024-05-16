@@ -1,5 +1,6 @@
 const Post = require("../models/Post");
 const User = require("../models/User");
+const mongoose = require("mongoose");
 
 // GET all posts
 exports.getAllPosts = async (req, res) => {
@@ -35,7 +36,7 @@ exports.createPost = async (req, res) => {
     const post = new Post({
       title: req.body.title,
       content: req.body.content,
-      author: req.params.userId.toString(), // Assign the user's ObjectId as the post's author
+      author: req.params.userId, // Assign the user's ObjectId as the post's author
     });
     const newPost = await post.save();
     res.status(201).json(newPost);

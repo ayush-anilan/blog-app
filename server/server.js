@@ -54,6 +54,10 @@ app.use(passport.initialize());
 // 4. Define the models
 const PostModel = require("./models/Post");
 const CommentModel = require("./models/Comment");
+
+// Define routes
+const indexRouter = require("./routes/index");
+const userRouter = require("./routes/users");
 const postRouter = require("./routes/posts");
 const commentRouter = require("./routes/comments");
 
@@ -63,88 +67,12 @@ app.get("/", (req, res) => {
   });
 });
 
+app.use("/", indexRouter);
+app.use("/users", userRouter);
 app.use("/posts", postRouter);
 app.use("/comment", commentRouter);
 
 // app.use(errorHandler);
-
-app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  const user = await UserModel.findOne({ email: email });
-  if (user) {
-    const passOK = bcrypt.compareSync(password, user.password);
-    if (passOK) {
-      jwt.sign(
-        {
-          email: user.email,
-          id: user._id,
-        },
-        "secretkey",
-        {},
-        (err, token) => {
-          if (err) throw err;
-          res.cookie("token", token).json(user);
-        }
-      );
-    } else {
-      res.status(422).json("pass not ok");
-    }
-  } else {
-    res.json("not found");
-  }
-});
-
-app.post("/register", async (req, res) => {
-  const { name, email, password } = req.body;
-  try {
-    const userDoc = await UserModel.create({
-      name: name,
-      email: email,
-      password: bcrypt.hashSync(password, 10),
-    });
-    res.json(userDoc);
-  } catch (err) {
-    res.status(422).json(err);
-  }
-});
-
-app.get("/user", verifyToken, async (req, res) => {
-  try {
-    const decoded = jwt.verify(req.token, "secretkey");
-    const user = await UserModel.findById(decoded.id);
-    res.json(user);
-  } catch (error) {
-    res.status(403).json({ message: "Unauthorized" });
-  }
-});
-
-app.post("/logout", async (req, res) => {
-  res.cookie("token", "").json(true);
-});
-
-app.patch("/update/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-    const updatedData = req.body;
-    const options = { new: true };
-
-    const result = await UserModel.findByIdAndUpdate(id, updatedData, options);
-
-    res.send(result);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
-
-app.delete("/delete/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-    const data = await UserModel.findByIdAndDelete(id);
-    res.send(`Document with ${data.name} has been deleted`);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
 
 // Format of token
 // Authorization: Bearer <access_token>
