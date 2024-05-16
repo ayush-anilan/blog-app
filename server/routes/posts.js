@@ -12,7 +12,7 @@ router.get("/:id", postController.getPostById);
 router.post("/:userId/create", postController.createPost);
 
 // PUT update post
-router.put("/:id", postController.updatePost);
+router.put("/:id/update", postController.updatePost);
 
 // DELETE delete post
 router.delete("/:id", postController.deletePost);
