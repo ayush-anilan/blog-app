@@ -9,6 +9,8 @@ const ExtractJwt = require("passport-jwt").ExtractJwt;
 const jwt = require("jsonwebtoken");
 const UserModel = require("./models/User");
 const path = require("path");
+const dotenv = require("dotenv");
+dotenv.config();
 
 // set up mongoose connection
 const mongoose = require("mongoose");
@@ -33,7 +35,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Set up JWT authentication strategy
 const opts = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: "secretkey", // Change this to your secret key
+  secretOrKey: process.env.SECRET_KEY, // Change this to your secret key
 };
 
 passport.use(

@@ -3,6 +3,8 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const path = require("path");
+const dotenv = require("dotenv");
+dotenv.config();
 
 // Multer setup
 const storage = multer.diskStorage({
@@ -33,11 +35,22 @@ exports.login = async (req, res) => {
           email: user.email,
           id: user._id,
         },
-        "secretkey",
+        process.env.SECRET_KEY,
         {},
         (err, token) => {
           if (err) throw err;
-          res.cookie("token", token).json(user);
+          const profilePicturePath = user.profilePicture
+            ? user.profilePicture.replace(/\\/g, "/")
+            : null;
+          res.cookie("token", token).json({
+            message: "login successful",
+            token,
+            user: {
+              id: user._id,
+              name: user.name,
+              profilePicture: profilePicturePath,
+            },
+          });
         }
       );
     } else {
@@ -62,11 +75,25 @@ exports.register = (req, res) => {
         name: name,
         email: email,
         password: bcrypt.hashSync(password, 10),
-        profilePicture: profilePicture, // Save profile picture path
+        profilePicture: profilePicture,
       });
       res.json(userDoc);
     } catch (err) {
-      res.status(422).json(err);
+      // Handle specific errors
+      if (err.code === 11000 && err.keyValue.email) {
+        // Duplicate email error (MongoDB)
+        return res.status(422).json({ message: "Email already exists." });
+      } else if (err.name === "ValidationError") {
+        // Mongoose validation error
+        const errors = {};
+        for (const field in err.errors) {
+          errors[field] = err.errors[field].message;
+        }
+        return res.status(422).json({ message: "Validation errors", errors });
+      } else {
+        console.error(err); // Log unexpected errors
+        return res.status(500).json({ message: "Internal server error." });
+      }
     }
   });
 };

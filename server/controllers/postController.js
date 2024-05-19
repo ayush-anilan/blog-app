@@ -25,7 +25,11 @@ const upload = multer({ storage: storage }).single("thumbnail");
 exports.getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find();
-    res.json(posts);
+    const postsWithThumbnails = posts.map((post) => ({
+      ...post.toObject(),
+      thumbnailUrl: post.getThumbnailUrl(),
+    }));
+    res.json(postsWithThumbnails);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -38,7 +42,11 @@ exports.getPostById = async (req, res) => {
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
-    res.json(post);
+    const postWithThumbnail = {
+      ...post.toObject(),
+      thumbnailUrl: post.getThumbnailUrl(),
+    };
+    res.json(postWithThumbnail);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
