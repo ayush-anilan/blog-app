@@ -57,10 +57,6 @@ passport.use(
 // Initialize Passport.js
 app.use(passport.initialize());
 
-// 4. Define the models
-const PostModel = require("./models/Post");
-const CommentModel = require("./models/Comment");
-
 // Define routes
 const indexRouter = require("./routes/index");
 const userRouter = require("./routes/users");

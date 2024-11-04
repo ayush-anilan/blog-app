@@ -19,7 +19,24 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage }).single("thumbnail");
+// File type validation
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(
+      new Error("Invalid file type. Only JPEG, JPG, and PNG are allowed."),
+      false
+    );
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 1024 * 1024 }, // 1MB file size limit
+}).single("thumbnail");
 
 // GET all posts
 exports.getAllPosts = async (req, res) => {
@@ -28,10 +45,27 @@ exports.getAllPosts = async (req, res) => {
     const postsWithThumbnails = posts.map((post) => ({
       ...post.toObject(),
       thumbnailUrl: post.getThumbnailUrl(),
+      idString: post._id.toString(),
     }));
     res.json(postsWithThumbnails);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Error fetching posts: " + err.message });
+  }
+};
+
+// GET posts by author
+exports.getPostsByAuthor = async (req, res) => {
+  try {
+    const posts = await Post.find({ author: req.params.authorId });
+    const postsWithThumbnails = posts.map((post) => ({
+      ...post.toObject(),
+      thumbnailUrl: post.getThumbnailUrl(),
+    }));
+    res.json(postsWithThumbnails);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Error fetching posts by author: " + err.message });
   }
 };
 
@@ -48,19 +82,22 @@ exports.getPostById = async (req, res) => {
     };
     res.json(postWithThumbnail);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Error fetching post: " + err.message });
   }
 };
 
 // POST create new post
 exports.createPost = async (req, res) => {
   upload(req, res, async (err) => {
-    if (err) {
-      return res.status(422).json({ message: "Error uploading file." });
+    if (err instanceof multer.MulterError) {
+      return res
+        .status(422)
+        .json({ message: "File upload error: " + err.message });
+    } else if (err) {
+      return res.status(422).json({ message: err.message });
     }
 
     try {
-      // Find the user who is creating the post
       const user = await User.findById(req.params.userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -69,14 +106,14 @@ exports.createPost = async (req, res) => {
       const post = new Post({
         title: req.body.title,
         content: req.body.content,
-        author: req.params.userId, // Assign the user's ObjectId as the post's author
-        thumbnail: req.file ? req.file.path : null, // Save thumbnail path
+        author: req.params.userId,
+        thumbnail: req.file ? req.file.path : null,
       });
 
       const newPost = await post.save();
       res.status(201).json(newPost);
     } catch (err) {
-      res.status(400).json({ message: err.message });
+      res.status(400).json({ message: "Error creating post: " + err.message });
     }
   });
 };
@@ -93,7 +130,7 @@ exports.updatePost = async (req, res) => {
     const updatedPost = await post.save();
     res.json(updatedPost);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({ message: "Error updating post: " + err.message });
   }
 };
 
@@ -107,6 +144,6 @@ exports.deletePost = async (req, res) => {
     await post.deleteOne();
     res.json({ message: "Post deleted" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Error deleting post: " + err.message });
   }
 };

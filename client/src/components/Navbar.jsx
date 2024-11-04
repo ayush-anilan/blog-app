@@ -1,78 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import api from '../services/api';
+import React from 'react'
+import Logo from '../assets/logo.png'
+import { ArrowRight, LogIn } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
-    const userName = localStorage.getItem('userName');
-    const [profilePicture, setProfilePicture] = useState("")
-
-    const navigate = useNavigate()
-
-    useEffect(() => {
-        const fetchProfilePic = async () => {
-            const userId = localStorage.getItem('userId');
-            try {
-                const response = await api.get(`/users/profile-picture/${userId}`, {
-                    responseType: 'arraybuffer' // Important: specify the response type
-                });
-                console.log(response);
-                const base64String = btoa(
-                    new Uint8Array(response.data).reduce((data, byte) => data + String.fromCharCode(byte), '')
-                );
-                setProfilePicture(`data:image/png;base64,${base64String}`);
-            } catch (error) {
-                console.error("Error fetching profile picture:", error);
-            }
-        };
-
-        if (userName) {
-            fetchProfilePic();
-        }
-    }, [userName]);
-
-
-
-    const handleLogout = () => {
-        localStorage.removeItem('token')
-        localStorage.removeItem("userName")
-        localStorage.removeItem('userId');
-        navigate("/login")
-    }
     return (
-        <nav className="bg-gray-800 p-4">
-            <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
-                <div>
-                    <h1 className='text-white'>Blog APP</h1>
+        <div className='flex flex-col md:flex-row relative container mx-auto justify-between items-center py-5'>
+            {/* Logo and Site Name */}
+            <Link to={'/'}>
+                <div className='flex items-center gap-2 md:gap-4 font-Mogra'>
+                    <img src={Logo} alt="Logo" className='w-16 md:w-20' />
+                    <p className='font-bold text-2xl md:text-4xl'>ByteChronicles</p>
                 </div>
-                <div className="flex items-center">
-                    {userName ? (
-                        <div className="flex items-center">
-                            <div>Write</div>
-                            <div className="text-white mr-4">{userName}</div>
-                            {profilePicture && (
-                                <img
-                                    src={profilePicture}
-                                    alt="Profile"
-                                    className="w-8 h-8 rounded-full object-cover"
-                                />
-                            )}
-                            <button
-                                onClick={handleLogout}
-                                className="ml-4 bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded"
-                            >
-                                Logout
-                            </button>
-                        </div>
-                    ) : (
-                        <>
-                            <a href="/login" className="text-white mr-4">Login</a>
-                            <a href="/register" className="text-white">Register</a>
-                        </>
-                    )}
-                </div>
+            </Link>
+
+            {/* Buttons: Sign In and Get Started */}
+            <div className='flex items-center gap-2 mt-4 md:mt-0 md:gap-5 font-Agdasima'>
+                {/* Sign In Button */}
+                <Link to={'/login'}>
+                    <div className='border border-black py-2 px-5 md:py-3 md:px-8 flex items-center gap-2'>
+                        <p className='font-semibold text-lg md:text-2xl'>Sign In</p>
+                        <LogIn className='w-5 h-5 md:w-6 md:h-6' />
+                    </div>
+                </Link>
+
+                {/* Get Started Button */}
+                <Link to={'/register'}>
+                    <div className='border py-2 px-5 md:py-3 md:px-8 flex items-center gap-2 bg-black text-white'>
+                        <p className='font-semibold text-lg md:text-2xl'>Get Started</p>
+                        <ArrowRight className='w-5 h-5 md:w-6 md:h-6' />
+                    </div>
+                </Link>
             </div>
-        </nav>
+        </div>
     );
-};
+}
 
 export default Navbar;
