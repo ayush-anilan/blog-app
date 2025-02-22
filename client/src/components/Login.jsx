@@ -2,11 +2,14 @@ import React, { useState } from 'react'
 import Navbar from './Navbar'
 import Footer from './Footer'
 import api from '../services/api'
+import { useNavigate } from 'react-router-dom'
 
 const Login = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState(null)
+    const navigate = useNavigate()
+
 
     const handleLogin = async (e) => {
         e.preventDefault()
@@ -17,7 +20,9 @@ const Login = () => {
 
             // Assuming the login was successful, handle the response data as needed
             console.log('Login successful:', response.data)
-            alert(response.data.message) // Show a message if login is successful
+            const userData = response.data.user;
+            localStorage.setItem('user', JSON.stringify(userData));
+            navigate("/")
             // Redirect or set user data as needed
         } catch (err) {
             setError(err.response?.data || 'An error occurred during login')

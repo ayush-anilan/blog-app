@@ -41,7 +41,7 @@ const upload = multer({
 // GET all posts
 exports.getAllPosts = async (req, res) => {
   try {
-    const posts = await Post.find();
+    const posts = await Post.find().populate("author", "name");
     const postsWithThumbnails = posts.map((post) => ({
       ...post.toObject(),
       thumbnailUrl: post.getThumbnailUrl(),
@@ -50,6 +50,20 @@ exports.getAllPosts = async (req, res) => {
     res.json(postsWithThumbnails);
   } catch (err) {
     res.status(500).json({ message: "Error fetching posts: " + err.message });
+  }
+};
+
+// Get posts by user ID
+exports.getUserPosts = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const posts = await Post.find({ author: userId }).populate(
+      "author",
+      "name"
+    );
+    res.json(posts);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching user posts" });
   }
 };
 
@@ -104,6 +118,7 @@ exports.createPost = async (req, res) => {
       }
 
       const post = new Post({
+        category: req.body.category,
         title: req.body.title,
         content: req.body.content,
         author: req.params.userId,

@@ -8,6 +8,8 @@ router.get("/", postController.getAllPosts);
 // GET single post
 router.get("/:id", postController.getPostById);
 
+router.get("/user/:userId", postController.getUserPosts);
+
 router.get("/author/:authorId", postController.getPostsByAuthor);
 
 // POST create new post
