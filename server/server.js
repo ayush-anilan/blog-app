@@ -6,7 +6,6 @@ const bcrypt = require("bcryptjs");
 const passport = require("passport");
 const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
-const jwt = require("jsonwebtoken");
 const UserModel = require("./models/User");
 const path = require("path");
 const dotenv = require("dotenv");

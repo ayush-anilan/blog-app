@@ -19,7 +19,7 @@ function App() {
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
           <Route path='/create' element={<CreatePost />} />
-          <Route path='/update' element={<UpdatePost />} />
+          <Route path='/:postId/update' element={<UpdatePost />} />
           <Route path='/my-posts' element={<MyPosts />} />
         </Routes>
       </Router>

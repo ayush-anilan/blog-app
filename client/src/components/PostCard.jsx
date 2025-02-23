@@ -2,7 +2,7 @@ import React from 'react'
 import Logo from '../assets/logo.png'
 import { ArrowRight } from 'lucide-react'
 
-const PostCard = ({ title, description, category, thumbnailUrl, author }) => {
+const PostCard = ({ title, content, category, thumbnailUrl, author }) => {
     return (
         <div className='w-full h-[520px] flex flex-col'>
             {/* 20% of the height for the image */}
@@ -19,7 +19,7 @@ const PostCard = ({ title, description, category, thumbnailUrl, author }) => {
                     <p className='text-xl font-bold'>{title}</p>
                 </div>
                 <div>
-                    <p className='text-gray-600'>{description}</p>
+                    <p className='text-gray-600'>{content}</p>
                 </div>
                 <div className='text-sm text-gray-700 mt-2'>
                     <p><strong>Author:</strong> {author}</p>

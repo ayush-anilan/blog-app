@@ -135,20 +135,39 @@ exports.createPost = async (req, res) => {
 
 // PUT update post
 exports.updatePost = async (req, res) => {
-  try {
-    const post = await Post.findById(req.params.id);
-    if (!post) {
-      return res.status(404).json({ message: "Post not found" });
+  upload(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      return res
+        .status(422)
+        .json({ message: "File upload error: " + err.message });
+    } else if (err) {
+      return res.status(422).json({ message: err.message });
     }
-    post.title = req.body.title;
-    post.content = req.body.content;
-    const updatedPost = await post.save();
-    res.json(updatedPost);
-  } catch (err) {
-    res.status(400).json({ message: "Error updating post: " + err.message });
-  }
-};
 
+    try {
+      const { title, content } = req.body;
+      const post = await Post.findById(req.params.id);
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+
+      const updatedData = {
+        title: title || post.title,
+        content: content || post.content,
+        thumbnail: req.file ? req.file.path : post.thumbnail,
+      };
+
+      const updatedPost = await Post.findByIdAndUpdate(
+        req.params.id,
+        updatedData,
+        { new: true }
+      );
+      res.status(200).json(updatedPost);
+    } catch (err) {
+      console.error(err);
+    }
+  });
+};
 // DELETE delete post
 exports.deletePost = async (req, res) => {
   try {

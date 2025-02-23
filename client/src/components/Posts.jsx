@@ -53,7 +53,7 @@ const Posts = () => {
                             <PostCard
                                 key={post.idString}
                                 title={post.title}
-                                description={post.description}
+                                content={post.content}
                                 category={post.category}
                                 thumbnailUrl={post.thumbnailUrl}
                                 author={post.author?.name || "Unknown"}

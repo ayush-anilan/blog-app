@@ -34,7 +34,7 @@ const Navbar = () => {
             {user ? (
                 <div className='flex items-center gap-5'>
                     <p className='text-lg font-semibold'>{user.name}</p>
-                    <img src={user.profilePicture} alt="Profile" className='w-12 h-12 rounded-full' />
+                    <img src={`http://localhost:4000/${user.profilePicture}`} alt="Profile" className='w-12 h-12 rounded-full' />
 
                     {/* My Posts Button */}
                     <Link to="/my-posts" className='flex items-center gap-2 bg-gray-700 text-white py-2 px-4 rounded-lg hover:bg-gray-800'>
