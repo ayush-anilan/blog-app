@@ -7,6 +7,7 @@ import Register from './components/Register'
 import CreatePost from './components/CreatePost'
 import UpdatePost from './components/UpdatePost'
 import MyPosts from './components/MyPosts'
+import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
 
@@ -15,12 +16,14 @@ function App() {
       <Router>
         <Routes>
           <Route path='/' element={<HomePage />} />
-          <Route path='/posts/:id' element={<PostDetail />} />
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
-          <Route path='/create' element={<CreatePost />} />
-          <Route path='/:postId/update' element={<UpdatePost />} />
-          <Route path='/my-posts' element={<MyPosts />} />
+          <Route path='/post/:postId' element={<PostDetail />} />
+
+          {/* Protected Routes */}
+          <Route path='/create' element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
+          <Route path='/:postId/update' element={<ProtectedRoute><UpdatePost /></ProtectedRoute>} />
+          <Route path='/my-posts' element={<ProtectedRoute><MyPosts /></ProtectedRoute>} />
         </Routes>
       </Router>
     </>

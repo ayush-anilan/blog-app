@@ -10,11 +10,13 @@ const MyPosts = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!user) return;
+        if (!user?.id) return;
 
         const fetchUserPosts = async () => {
             try {
                 const res = await api.get(`/api/posts/user/${user.id}`);
+                console.log(res.data);
+
                 setPosts(res.data);
             } catch (error) {
                 console.error("Error fetching user posts:", error);
@@ -22,7 +24,7 @@ const MyPosts = () => {
         };
 
         fetchUserPosts();
-    }, [user]);
+    }, [user?.id]);
 
     const handleDelete = async (postId) => {
         if (!window.confirm("Are you sure you want to delete this post?")) return;
@@ -48,10 +50,10 @@ const MyPosts = () => {
                     {posts.length > 0 ? (
                         posts.map((post) => (
                             <div key={post._id} className="border p-4 rounded-lg shadow-md">
-                                <img src={post.thumbnailUrl} alt={post.title} className="w-full h-40 object-cover rounded-md" />
+                                <img src={post.thumbnail} alt={post.title} className="w-full h-40 object-cover rounded-md" />
                                 <h3 className='text-xl font-semibold mt-2'>{post.title}</h3>
                                 <p className='text-gray-600 text-sm'>{post.category}</p>
-                                <p className='text-gray-700 mt-2'>{post.description}...</p>
+                                <p className='text-gray-700 mt-2'>{post.content}...</p>
 
                                 {/* Action Buttons */}
                                 <div className='flex justify-between mt-4'>

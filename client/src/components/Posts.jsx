@@ -12,6 +12,7 @@ const Posts = () => {
             try {
                 const res = await api.get('api/posts'); // Adjust API route
                 const data = res.data;
+                // console.log(data);
                 setPosts(data);
                 setFilteredPosts(data); // Initialize filtered posts
             } catch (error) {
@@ -52,10 +53,11 @@ const Posts = () => {
                         filteredPosts.map((post) => (
                             <PostCard
                                 key={post.idString}
+                                id={post._id}
                                 title={post.title}
                                 content={post.content}
                                 category={post.category}
-                                thumbnailUrl={post.thumbnailUrl}
+                                thumbnailUrl={post.thumbnail}
                                 author={post.author?.name || "Unknown"}
                             />
                         ))

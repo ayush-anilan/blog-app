@@ -1,5 +1,28 @@
 const User = require("../models/User");
+const cloudinary = require("cloudinary").v2;
+const multer = require("multer");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+require("dotenv").config();
 const path = require("path");
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
+});
+
+// Configure Multer Storage for Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "profile_pictures",
+    format: async () => "jpg", // Change format if needed
+    public_id: (req, file) => `${Date.now()}-${file.originalname}`,
+  },
+});
+
+const upload = multer({ storage: storage });
 
 // Get users
 exports.getUsers = async (req, res) => {
@@ -18,33 +41,39 @@ exports.getUserById = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    // Constructing the response object with profile picture URL
-    const userProfile = {
+
+    // Return user details with Cloudinary image URL
+    res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
-      profilePicture: user.profilePicture
-        ? `/api/profile-picture/${user._id}`
-        : null,
-    };
-    res.json(userProfile);
+      profilePicture: user.profilePicture || null, // Cloudinary URL
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Get profile picture
-exports.getProfilePicture = async (req, res) => {
+// Upload Profile Picture
+exports.uploadProfilePicture = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user || !user.profilePicture) {
-      return res.status(404).json({ message: "Profile picture not found" });
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
     }
-    // Send the profile picture
-    res.sendFile(path.join(__dirname, "..", user.profilePicture));
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server Error" });
+
+    // Upload file to Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path);
+
+    // Update user profile with Cloudinary URL
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { profilePicture: result.secure_url },
+      { new: true }
+    );
+
+    res.json({ message: "Profile picture updated", user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 

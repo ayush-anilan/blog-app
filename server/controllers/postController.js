@@ -2,20 +2,25 @@ const Post = require("../models/Post");
 const User = require("../models/User");
 const mongoose = require("mongoose");
 const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+require("dotenv").config();
 const path = require("path");
 
-// Multer setup
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./uploads/thumbnails/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix =
-      Date.now() +
-      "-" +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
-    cb(null, file.fieldname + "-" + uniqueSuffix);
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
+});
+
+// Configure Multer Storage for Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "blog_thumbnails", // Folder name in Cloudinary
+    allowed_formats: ["jpg", "jpeg", "png"], // Allowed file types
+    transformation: [{ width: 500, height: 500, crop: "limit" }], // Optional resize
   },
 });
 
@@ -41,10 +46,9 @@ const upload = multer({
 // GET all posts
 exports.getAllPosts = async (req, res) => {
   try {
-    const posts = await Post.find().populate("author", "name");
+    const posts = await Post.find().populate("author", "name profilePicture");
     const postsWithThumbnails = posts.map((post) => ({
       ...post.toObject(),
-      thumbnailUrl: post.getThumbnailUrl(),
       idString: post._id.toString(),
     }));
     res.json(postsWithThumbnails);
@@ -86,15 +90,18 @@ exports.getPostsByAuthor = async (req, res) => {
 // GET single post
 exports.getPostById = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.id).populate(
+      "author",
+      "name profilePicture"
+    );
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
-    const postWithThumbnail = {
+
+    res.json({
       ...post.toObject(),
-      thumbnailUrl: post.getThumbnailUrl(),
-    };
-    res.json(postWithThumbnail);
+      thumbnailUrl: post.thumbnail, // Cloudinary URL instead of local file path
+    });
   } catch (err) {
     res.status(500).json({ message: "Error fetching post: " + err.message });
   }
@@ -103,12 +110,10 @@ exports.getPostById = async (req, res) => {
 // POST create new post
 exports.createPost = async (req, res) => {
   upload(req, res, async (err) => {
-    if (err instanceof multer.MulterError) {
+    if (err) {
       return res
         .status(422)
         .json({ message: "File upload error: " + err.message });
-    } else if (err) {
-      return res.status(422).json({ message: err.message });
     }
 
     try {
@@ -122,7 +127,7 @@ exports.createPost = async (req, res) => {
         title: req.body.title,
         content: req.body.content,
         author: req.params.userId,
-        thumbnail: req.file ? req.file.path : null,
+        thumbnail: req.file ? req.file.path : null, // Cloudinary URL instead of local path
       });
 
       const newPost = await post.save();

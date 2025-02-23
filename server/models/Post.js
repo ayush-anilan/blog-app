@@ -11,12 +11,4 @@ const postSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-postSchema.methods.getThumbnailUrl = function () {
-  if (this.thumbnail) {
-    // Replace 'http://localhost:3000' with your actual server URL
-    return `http://localhost:4000/${this.thumbnail}`;
-  }
-  return null;
-};
-
 module.exports = mongoose.model("Post", postSchema);

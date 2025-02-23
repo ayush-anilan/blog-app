@@ -3,30 +3,35 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const path = require("path");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const dotenv = require("dotenv");
 dotenv.config();
 
-// Multer setup
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./uploads/profilepics/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix =
-      Date.now() +
-      "-" +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
-    cb(null, file.fieldname + "-" + uniqueSuffix);
+// Cloudinary configuration
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Multer setup for Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "profile_pictures",
+    allowed_formats: ["jpg", "png", "jpeg"],
+    public_id: (req, file) => `${Date.now()}-${file.originalname}`,
   },
 });
 
-const upload = multer({ storage: storage }).single("profilePicture");
+const upload = multer({ storage }).single("profilePicture");
 
 // login
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email: email });
+
   if (user) {
     const passOK = bcrypt.compareSync(password, user.password);
     if (passOK) {
@@ -39,25 +44,22 @@ exports.login = async (req, res) => {
         {},
         (err, token) => {
           if (err) throw err;
-          const profilePicturePath = user.profilePicture
-            ? user.profilePicture.replace(/\\/g, "/")
-            : null;
           res.cookie("token", token).json({
-            message: "login successful",
+            message: "Login successful",
             token,
             user: {
               id: user._id,
               name: user.name,
-              profilePicture: profilePicturePath,
+              profilePicture: user.profilePicture, // Cloudinary URL
             },
           });
         }
       );
     } else {
-      res.status(422).json("pass not ok");
+      res.status(422).json("Invalid password");
     }
   } else {
-    res.json("not found");
+    res.status(404).json("User not found");
   }
 };
 
@@ -68,36 +70,38 @@ exports.register = (req, res) => {
     }
 
     const { name, email, password } = req.body;
-    const profilePicture = req.file ? req.file.path : null;
+    let profilePicture = null;
+
+    if (req.file) {
+      profilePicture = req.file.path; // Cloudinary URL
+    }
 
     try {
+      const hashedPassword = bcrypt.hashSync(password, 10);
       const userDoc = await User.create({
         name: name,
         email: email,
-        password: bcrypt.hashSync(password, 10),
-        profilePicture: profilePicture,
+        password: hashedPassword,
+        profilePicture: profilePicture, // Cloudinary URL stored
       });
+
       res.json(userDoc);
     } catch (err) {
-      // Handle specific errors
       if (err.code === 11000 && err.keyValue.email) {
-        // Duplicate email error (MongoDB)
         return res.status(422).json({ message: "Email already exists." });
       } else if (err.name === "ValidationError") {
-        // Mongoose validation error
         const errors = {};
         for (const field in err.errors) {
           errors[field] = err.errors[field].message;
         }
         return res.status(422).json({ message: "Validation errors", errors });
       } else {
-        console.error(err); // Log unexpected errors
+        console.error(err);
         return res.status(500).json({ message: "Internal server error." });
       }
     }
   });
 };
-
 exports.logout = async (req, res) => {
   res.cookie("token", "").json(true);
 };

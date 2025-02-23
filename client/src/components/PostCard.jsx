@@ -1,8 +1,9 @@
 import React from 'react'
 import Logo from '../assets/logo.png'
 import { ArrowRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
-const PostCard = ({ title, content, category, thumbnailUrl, author }) => {
+const PostCard = ({ id, title, content, category, thumbnailUrl, author }) => {
     return (
         <div className='w-full h-[520px] flex flex-col'>
             {/* 20% of the height for the image */}
@@ -25,8 +26,10 @@ const PostCard = ({ title, content, category, thumbnailUrl, author }) => {
                     <p><strong>Author:</strong> {author}</p>
                 </div>
                 <div className='flex items-center  cursor-pointer'>
-                    <p className='mr-2'>Read More</p>
-                    <ArrowRight />
+                    <Link to={`/post/${id}`}>
+                        <p className='mr-2'>Read More</p>
+                        <ArrowRight />
+                    </Link>
                 </div>
             </div>
         </div>
