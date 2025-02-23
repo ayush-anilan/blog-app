@@ -9,6 +9,7 @@ const postSchema = new Schema({
   thumbnail: { type: String, required: true },
   published: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
+  comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 });
 
 module.exports = mongoose.model("Post", postSchema);

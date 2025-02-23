@@ -16,9 +16,11 @@ const PostCard = ({ id, title, content, category, thumbnailUrl, author }) => {
                 <div className='w-fit bg-black text-white'>
                     <p className='text-sm p-1'>{category}</p>
                 </div>
-                <div>
-                    <p className='text-xl font-bold'>{title}</p>
-                </div>
+                <Link to={`/post/${id}`}>
+                    <div>
+                        <p className='text-xl font-bold'>{title}</p>
+                    </div>
+                </Link>
                 <div>
                     <p className='text-gray-600'>{content}</p>
                 </div>
