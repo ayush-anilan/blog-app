@@ -7,5 +7,5 @@ export default {
       Agdasima: ["Agdasima"],
     },
   },
-  plugins: [require("@tailwindcss/line-clamp")],
+  plugins: [],
 };
